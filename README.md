@@ -193,7 +193,7 @@ rent, book, billing, myPage 서비스는 Correlation-key 로 rentid, bookid, bil
 서비스간 연관된 처리를 정확하게 구현하고 있습니다.
 ```
 
-4.1 책 등록 (bookid=1, stock: 5개)
+4.1 책 등록 (bookid=1-stock:1개, bookid=2-stock:1개)
 ```
 http POST http://localhost:8088/books bookid=1 stock=5
 http POST http://localhost:8088/books bookid=2 stock=1
