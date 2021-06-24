@@ -512,15 +512,19 @@ kubectl get pod/rent-85c54dd5b-gzjrb -n rbook -o yaml | kubectl replace --force 
 
 
 
-### 3. 동기식 호출 / 서킷 브레이킹 / 장애격리
+### 3. 동기식 호출 / Circuit Breaker / 장애격리
 
-* 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
+3.1.서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
 
-시나리오는 단말앱(app)-->결제(pay) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 결제 요청이 과도할 경우 CB 를 통하여 장애격리.
+시나리오는 대여서비스(rent)--> book 서비스의 연결을 RESTful Request/Response 로 연동하여 구현하였고, Book 서비스 요청이 과도할 경우 CB 를 통하여 장애격리를 격리한다.
 
-- Hystrix 를 설정:  요청처리 쓰레드에서 처리시간이 610 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 (요청을 빠르게 실패처리, 차단) 설정
+3.2.동기 호출 주체인 Rent 서비스의 pplication.yml 파일에 Hystrix 설정
+
+Hystrix 를 설정:  요청처리 쓰레드에서 처리시간이 610 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 (요청을 빠르게 실패처리, 차단) 설정
+
 ```
-# application.yml
+rent/src/main/resources/application.yml 파일
+
 feign:
   hystrix:
     enabled: true
@@ -530,29 +534,33 @@ hystrix:
     # 전역설정
     default:
       execution.isolation.thread.timeoutInMilliseconds: 610
+```
+
+![image](https://user-images.githubusercontent.com/84724396/123293680-2a13b780-d54f-11eb-80b8-88c9aaf36442.png)
+
+
+3.3.siege 툴 사용법:
 
 ```
-![image](https://user-images.githubusercontent.com/73699193/98093705-a166df00-1ecb-11eb-83b5-f42e554f7ffd.png)
-
-* siege 툴 사용법:
-```
- siege가 생성되어 있지 않으면:
- kubectl run siege --image=apexacme/siege-nginx -n phone82
- siege 들어가기:
- kubectl exec -it pod/siege-5c7c46b788-4rn4r -c siege -n phone82 -- /bin/bash
- siege 종료:
+ 1)siege가 생성되어 있지 않으면:
+ kubectl run siege --image=apexacme/siege-nginx -n rbook
+ 
+ 2)siege 들어가기:
+ kubectl exec -it pod/siege-d484db9c-ln4r4 -c siege -n rbook -- /bin/bash
+ 
+ 3)siege 종료:
  Ctrl + C -> exit
 ```
-* 부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인:
-- 동시사용자 100명
-- 60초 동안 실시
+
+3.4.부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인: 동시사용자 5명, 10초 동안 실시
 
 ```
-siege -c100 -t60S -r10 -v --content-type "application/json" 'http://app:8080/orders POST {"item": "abc123", "qty":3}'
-```
-- 부하 발생하여 CB가 발동하여 요청 실패처리하였고, 밀린 부하가 pay에서 처리되면서 다시 order를 받기 시작 
+siege -c5 -t10S -r10 -v --content-type "application/json" 'http://20.194.57.130:8080/rents POST {"userid": "201", "bikeid": "7" }'
 
-![image](https://user-images.githubusercontent.com/73699193/98098702-07eefb80-1ed2-11eb-94bf-316df4bf682b.png)
+```
+3.5부하 발생하여 CB가 발동하여 요청 실패처리하였고, 밀린 부하가 book 에서 처리되면서 다시 rent 를 받기 시작 
+
+
 
 - report
 
