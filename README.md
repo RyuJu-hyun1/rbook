@@ -366,23 +366,28 @@ mypage에서 rent와 billing 정보를 조회한다.
 ## 1. Deploy
 
 ### 1.1 namespace 생성
+
 ```
 kubectl create ns rbook
 ```
 
 ### 1.2 git에서 소스 가져오기
+
 ```
 git clone https://github.com/rbook/app.git
 ```
 
 ### 1.3 Build 하기 (예: rent)
+
 ```
 cd /home/project/rbook/rent
 mvn clean
 mvn compile
 mvn package
 ```
+
 ### 1.4 Docker Image Push/deploy/Service 생성
+
 ```
 cd /home/project/rbook/rent
 az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/rent:v4 . 
@@ -414,13 +419,15 @@ kubectl get all -n rbook
 ```
 ![image](https://user-images.githubusercontent.com/84724396/123253692-b3fc5a00-d528-11eb-9066-f2e95076ef7a.png)
 
+
 ### 1.5 yml파일 이용한 deploy
 
-1)deployment.yml 파일 (예: book)
+1.5.1)deployment.yml 파일 (예: book)
 
 ![image](https://user-images.githubusercontent.com/84724396/123274061-262b6980-d53e-11eb-8279-539b01d49c4a.png)
 
-2)Deploy/Service 생성
+1.5.2)Deploy/Service 생성
+
 ```
 cd /home/project/rbook/rent
 kubectl create -f ./kubernetes/deployment.yml -n rbook
@@ -439,16 +446,18 @@ kubectl create -f ./kubernetes/deployment.yml -n rbook
 kubectl create -f ./kubernetes/service.yaml -n rbook
 ```
 
-3)컨테이너라이징: Deploy 생성, Service 생성 확인
+1.5.3)컨테이너라이징: Deploy 생성, Service 생성 확인
+
 ```
 kubectl get all -n rbook
 ```
 
 ![image](https://user-images.githubusercontent.com/84724396/123275870-a8685d80-d53f-11eb-9aa4-422c9a276759.png)
 
+
 ### 1.6 ConfigMap
 
-1)application.yml 파일 설정
+1.6.1)application.yml 파일 설정
 - default 쪽
 
 ![image](https://user-images.githubusercontent.com/84724396/123258618-887c6e00-d52e-11eb-9ac4-7edab97c6ee3.png)
@@ -457,38 +466,47 @@ kubectl get all -n rbook
 
 ![image](https://user-images.githubusercontent.com/84724396/123255732-24a47600-d52b-11eb-9dc6-3b70fe16879b.png)
 
-2) BookService.java 파일
+1.6.2)BookService.java 파일
 
 ![image](https://user-images.githubusercontent.com/84724396/123256098-87960d00-d52b-11eb-8b5c-5fe397e8d325.png)
 
 
-3) deployment.yaml 파일 설정
+1.6.3)deployment.yaml 파일 설정
 
 ![image](https://user-images.githubusercontent.com/84724396/123269893-5f61da80-d53a-11eb-9daa-031203e4dacd.png)
 
-4) configMap 생성 및 확인
+1.6.4)configMap 생성 및 확인
 ```
 kubectl create configmap configmap-bookurl --from-literal=url=http://book:8080 --from-literal=fluentd-server-ip=10.xxx.xxx.xxx -n rbook
 kubectl get configmap configmap-bookurl -o yaml -n rbook
 ```
-![image](https://user-images.githubusercontent.com/84724396/123270218-acde4780-d53a-11eb-9f2a-4731f3b703b9.png)
+![image](https://user-images.githubusercontent.com/84724396/123277167-d306e600-d540-11eb-860b-b4894afdcdf9.png)
 
-5) 설정한 url로 주문 호출 --> 성공
+1.6.5)설정한 url로 주문 호출 --> 성공
+
 ```
 http POST http://20.194.57.130:8080/rents userid=101 bookid=1
 ```
+
 ![image](https://user-images.githubusercontent.com/84724396/123270466-e4e58a80-d53a-11eb-8e48-694dd61f35c4.png)
 
-6) configmap 삭제 후 app 서비스 재시작
+
+1.6.6)configmap 삭제 후 app 서비스 재시작 -->Fail
+
 ```
 kubectl delete configmap --all -n rbook
 ```
 ![image](https://user-images.githubusercontent.com/84724396/123270712-1fe7be00-d53b-11eb-851b-55f753801160.png)
 
+
 ```
 kubectl get pod/rent-85c54dd5b-gzjrb -n rbook -o yaml | kubectl replace --force -f-
+--> CreateContainerConfigError 발생 
 ```
+
 ![image](https://user-images.githubusercontent.com/84724396/123271000-5ae9f180-d53b-11eb-9836-fb974423fa6a.png)
+
+
 
 ### 2. 동기식 호출 / 서킷 브레이킹 / 장애격리
 
