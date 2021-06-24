@@ -158,7 +158,7 @@ mvn spring-boot:run
 
 Entity Pattern 과 Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터를 자동 생성하기 위하여 Spring Data REST 의 RestRepository 를 적용하였다
 
-![image](https://user-images.githubusercontent.com/84724396/122665647-65c32000-d1e3-11eb-95f2-0d39e9413c90.png)
+![image](https://user-images.githubusercontent.com/84724396/123199440-d753e480-d4e9-11eb-9833-1f237af2c0eb.png)
 
 
 ### 2. 폴리글랏 퍼시스턴스
