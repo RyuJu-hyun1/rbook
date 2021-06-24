@@ -204,6 +204,9 @@ http POST http://localhost:8088/books bookid=2 stock=1
 ```
 http POST localhost:8088/rents userid=100 bookid=1
 ```
+![image](https://user-images.githubusercontent.com/84724396/123206669-0d4b9580-d4f7-11eb-9266-d54c0d11341d.png)
+
+
 ![image](https://user-images.githubusercontent.com/84724396/123205900-a5487f80-d4f5-11eb-8999-79b4a5234c46.png)
 
 4.3 책 재고(stock)가 1개 감소한다. (bookid=1, stock: 4개)
