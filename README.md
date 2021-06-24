@@ -260,24 +260,25 @@ http GET http://localhost:8088/billings/2
 - [검증1] 동기식 호출이 적용되서 Book 시스템이 장애가 나면 대여를 하지 못 한다는 것을 확인
 
 ```
-#book 서비스를 잠시 내려놓음 (ctrl+c)
+1) book 서비스를 잠시 내려놓음 (ctrl+c)
 
-#대여하기(rent)
-http POST localhost:8081/rents userid=200 bookid=2   #Fail
+2) 책 대여하기(rent) -->Fail
+   http POST localhost:8088/rents userid=100 bookid=1   
 ```
--------이미지 교체
-![image](https://user-images.githubusercontent.com/73699193/98072284-04934a00-1ea9-11eb-9fad-40d3996e109f.png)
+
+![image](https://user-images.githubusercontent.com/84724396/123209772-1428d700-d4fc-11eb-9530-dd89f8ebb37a.png)
 
 ```
 #book 서비스 재기동
 cd book
 mvn spring-boot:run
 
-#대여하기(rent)
-http POST localhost:8081/rents userid=200 bookid=2   #Success
+2) 책 대여하기(rent) -->성공
+   http POST localhost:8088/rents userid=100 bookid=1   
 ```
--------이미지 교체
-![image](https://user-images.githubusercontent.com/73699193/98074359-9f8e2300-1ead-11eb-8854-0449a65ff55c.png)
+![image](https://user-images.githubusercontent.com/84724396/123210339-d24c6080-d4fc-11eb-8fc5-fd611b9026e0.png)
+
+![image](https://user-images.githubusercontent.com/84724396/123210386-e1331300-d4fc-11eb-8f4e-ad41c3bd6e79.png)
 
 
 - [검증2] 책 재고가 0이면 대여를 하지 못 한다는 비기능 요구사항 확인
