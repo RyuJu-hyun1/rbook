@@ -152,7 +152,7 @@ mvn spring-boot:run
 
 ### 1. DDD 의 적용
 
-각 서비스 내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다
+각 서비스 내에 도출된 핵심 Aggregate Root 객체를 Entity 로 선언하였다 (예: book)
 
 ![image](https://user-images.githubusercontent.com/84724396/122665595-154bc280-d1e3-11eb-8470-c4c534ef169d.png)
 
