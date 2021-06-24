@@ -459,9 +459,9 @@ kubectl get all -n rbook
 ![image](https://user-images.githubusercontent.com/84724396/123281630-d00df480-d544-11eb-9760-a63fbebe4cb0.png)
 
 
-### 1.6 ConfigMap
+### 2. ConfigMap
 
-1.6.1.application.yml 파일 설정
+2.1.application.yml 파일 설정
 - default 쪽
 
 ![image](https://user-images.githubusercontent.com/84724396/123258618-887c6e00-d52e-11eb-9ac4-7edab97c6ee3.png)
@@ -470,23 +470,23 @@ kubectl get all -n rbook
 
 ![image](https://user-images.githubusercontent.com/84724396/123255732-24a47600-d52b-11eb-9dc6-3b70fe16879b.png)
 
-1.6.2.BookService.java 파일
+2.2.BookService.java 파일
 
 ![image](https://user-images.githubusercontent.com/84724396/123256098-87960d00-d52b-11eb-8b5c-5fe397e8d325.png)
 
 
-1.6.3.deployment.yaml 파일 설정
+2.3.deployment.yaml 파일 설정
 
 ![image](https://user-images.githubusercontent.com/84724396/123269893-5f61da80-d53a-11eb-9daa-031203e4dacd.png)
 
-1.6.4.configMap 생성 및 확인
+2.4.configMap 생성 및 확인
 ```
 kubectl create configmap configmap-bookurl --from-literal=url=http://book:8080 --from-literal=fluentd-server-ip=10.xxx.xxx.xxx -n rbook
 kubectl get configmap configmap-bookurl -o yaml -n rbook
 ```
 ![image](https://user-images.githubusercontent.com/84724396/123277167-d306e600-d540-11eb-860b-b4894afdcdf9.png)
 
-1.6.5.설정한 url로 주문 호출 --> 성공
+2.5.설정한 url로 주문 호출 --> 성공
 
 ```
 http POST http://20.194.57.130:8080/rents userid=101 bookid=1
@@ -495,7 +495,7 @@ http POST http://20.194.57.130:8080/rents userid=101 bookid=1
 ![image](https://user-images.githubusercontent.com/84724396/123270466-e4e58a80-d53a-11eb-8e48-694dd61f35c4.png)
 
 
-1.6.6.configmap 삭제 후 app 서비스 재시작 -->Fail
+2.6.configmap 삭제 후 app 서비스 재시작 -->Fail
 
 ```
 kubectl delete configmap --all -n rbook
@@ -512,7 +512,7 @@ kubectl get pod/rent-85c54dd5b-gzjrb -n rbook -o yaml | kubectl replace --force 
 
 
 
-### 2. 동기식 호출 / 서킷 브레이킹 / 장애격리
+### 3. 동기식 호출 / 서킷 브레이킹 / 장애격리
 
 * 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
 
@@ -561,7 +561,7 @@ siege -c100 -t60S -r10 -v --content-type "application/json" 'http://app:8080/ord
 - CB 잘 적용됨을 확인
 
 
-### 오토스케일 아웃
+### 4. 오토스케일 아웃
 
 - 대리점 시스템에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다:
 
@@ -599,7 +599,7 @@ kubectl get deploy store -w -n phone82
 ![image](https://user-images.githubusercontent.com/73699193/98103249-14765280-1ed8-11eb-8c7c-9ea1c67e03cf.png)
 
 
-## 무정지 재배포
+### 5. 무정지 재배포
 
 * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscale 이나 CB 설정을 제거함
 
@@ -637,7 +637,7 @@ kubectl set image deploy store store=admin02.azurecr.io/store:v4 -n phone82
 ![image](https://user-images.githubusercontent.com/73699193/98106524-c152ce80-1edc-11eb-8e0f-3731ca2f709d.png)
 
 
-## Self-healing (Liveness Probe)
+### 6. Self-healing (Liveness Probe)
 
 - store 서비스 정상 확인
 
