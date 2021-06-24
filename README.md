@@ -456,7 +456,7 @@ kubectl create -f ./kubernetes/service.yaml -n rbook
 kubectl get all -n rbook
 ```
 
-![image](https://user-images.githubusercontent.com/84724396/123275870-a8685d80-d53f-11eb-9aa4-422c9a276759.png)
+![image](https://user-images.githubusercontent.com/84724396/123281630-d00df480-d544-11eb-9760-a63fbebe4cb0.png)
 
 
 ### 1.6 ConfigMap
