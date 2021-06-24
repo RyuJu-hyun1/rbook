@@ -183,12 +183,60 @@ gateway > applitcation.yml 설정
 ![image](https://user-images.githubusercontent.com/84724396/122665929-40cfac80-d1e5-11eb-83d9-bbe402f73f57.png)
 
 
------- gateway 테스트
+### 4. 시나리오 검증 (Gateway 사용, Correlation)
 
+Correlation
 ```
-http POST http://gateway:8080/orders item=test qty=1
+rent, book, billing, myPage 서비스는 Correlation-key 로 구userid, rentid, bookid, billid 값을 전달받아 서비스간 연관된 처리를 정확하게 구현하고 있습니다.
 ```
-![image](https://user-images.githubusercontent.com/73699193/98183284-2d6c1b80-1f4b-11eb-90ad-c95c4df1f36a.png)
+
+4.1 책 등록 (bookid=1, 재고: 5개)
+```
+http POST http://localhost:8088/books bookid=1 stock=5
+http POST http://localhost:8088/books bookid=2 stock=1
+```
+![image](https://user-images.githubusercontent.com/84724396/123202556-bf7f5f00-d4ef-11eb-955e-746459ddb49b.png)
+
+4.2 책 대여 (userid=100, bookid=1) -> rentid=2 생성됨
+```
+http POST localhost:8088/rents userid=100 bookid=1
+```
+
+[image](https://user-images.githubusercontent.com/84724396/123202688-066d5480-d4f0-11eb-8f9c-cbc18f9f7f83.png)
+
+4.3 책 재고가 1개 감소한다. (bookid=1, 재고: 4개)
+```
+http GET http://localhost:8088/books/1 
+```
+![image](https://user-images.githubusercontent.com/84724396/123202892-7085f980-d4f0-11eb-9720-1c37b4faf0f4.png)
+
+4.4 rentid=2 에 대한 청구서가 등록된다. -> billingid=2 생성됨
+```
+http GET http://localhost:8088/billings
+```
+
+![image](https://user-images.githubusercontent.com/84724396/123203000-9d3a1100-d4f0-11eb-828d-ee9e2aa69e45.png)
+
+4.5 책 반납 (rentid=2)
+```
+http PATCH localhost:8088/rents/2 status="반납"
+```
+
+![image](https://user-images.githubusercontent.com/84724396/123203176-e5593380-d4f0-11eb-9e43-e7327fc3a36f.png)
+
+4.6 반납한 책 (bookid=1) 재고가 1개 증가한다. (4개->5개)
+```
+http GET http://localhost:8088/books/1
+```
+
+![image](https://user-images.githubusercontent.com/84724396/123203339-28b3a200-d4f1-11eb-9bca-10097e69b9d4.png)
+
+4.7 rentid=2 에 대한 청구서(billingid=2)가 결재완료 된다. 
+```
+http GET http://localhost:8088/billings/2
+```
+
+![image](https://user-images.githubusercontent.com/84724396/123203430-4f71d880-d4f1-11eb-80d4-d163915b8a4c.png)
 
 
 ### 4. 동기식 호출 과 Fallback 처리
@@ -284,9 +332,13 @@ http GET localhost:8084/myPages    # billid, fee, billstatus 값이 update 됨
 ### 6. CQRS 
 
 mypage에서 rent와 billing 정보를 조회한다.
-Correlation을 key를 활용하여 userid, rentid, bookid, billid 등 원하는 값을 서비스간의 I/F를 통하여 서비스 간에 트랜잭션이 묶여 있음을 알 수 있다.
+```
+- rent 정보 : userid=100, bookid=1, status=반납
+- billing 정보 : billind=2, fee=1000, status=Paid
+```
 
--------- 이미지 추가
+![image](https://user-images.githubusercontent.com/84724396/123204314-cc518200-d4f2-11eb-9723-a6e83d3e4845.png)
+
 
 # 운영
 
