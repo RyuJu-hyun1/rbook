@@ -382,7 +382,7 @@ mvn clean
 mvn compile
 mvn package
 ```
-### 1.4 Docker Image Push/deploy/서비스 생성 (예: rent)
+### 1.4 Docker Image Push/deploy/서비스 생성
 ```
 cd /home/project/rbook/rent
 az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/rent:v1 . 
@@ -417,14 +417,8 @@ kubectl apply -f ./kubernetes/deployment.yml -n rbook
 ```
 - deployment.yml 파일
 ```
-namespace, image 설정
-env 설정 (config Map) 
-readiness 설정 (무정지 배포)
-liveness 설정 (self-healing)
-resource 설정 (autoscaling)
-```
+![image](https://user-images.githubusercontent.com/84724396/123252836-ac888100-d527-11eb-9519-1c6e981711c6.png)
 
---------이미지 추가 (deployment.yml)
 
 ### 1.6 컨테이너라이징: Deploy 생성, 서비스 생성 확인
 
