@@ -363,7 +363,7 @@ mypage에서 rent와 billing 정보를 조회한다.
 
 # 운영
 
-## 1. Deploy / Pipeline
+## 1. Deploy
 
 ### 1.1 namespace 생성
 ```
@@ -382,10 +382,10 @@ mvn clean
 mvn compile
 mvn package
 ```
-### 1.4 Docker Image Push/deploy/서비스 생성
+### 1.4 Docker Image Push/deploy/Service 생성
 ```
 cd /home/project/rbook/rent
-az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/rent:v1 . 
+az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/rent:v4 . 
 kubectl create deploy rent --image=skccrjh2.azurecr.io/rent:v1 -n rbook  
 kubectl expose deploy rent --type=ClusterIP --port=8080 -n rbook
 
@@ -409,22 +409,42 @@ az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/gateway:v2 .
 kubectl create deploy gateway --image=skccrjh2.azurecr.io/gateway:v2 -n rbook  
 kubectl expose deploy gateway --type=LoadBalancer --port=8080 -n rbook
 ```
-
-### 1.5 yml파일 이용한 deploy
-```
-cd /home/project/rbook/rent
-kubectl apply -f ./kubernetes/deployment.yml -n rbook
-```
-- deployment.yml 파일 (예: rent)
-```
-![image](https://user-images.githubusercontent.com/84724396/123253978-0b022f00-d529-11eb-9223-01ba51711a3f.png)
-
-### 1.6 컨테이너라이징: Deploy 생성, 서비스 생성 확인
-
 ```
 kubectl get all -n rbook
 ```
 ![image](https://user-images.githubusercontent.com/84724396/123253692-b3fc5a00-d528-11eb-9066-f2e95076ef7a.png)
+
+### 1.5 yml파일 이용한 deploy
+
+1)deployment.yml 파일 (예: book)
+
+![image](https://user-images.githubusercontent.com/84724396/123274061-262b6980-d53e-11eb-8279-539b01d49c4a.png)
+
+2)Deploy/Service 생성
+```
+cd /home/project/rbook/rent
+kubectl create -f ./kubernetes/deployment.yml -n rbook
+kubectl create -f ./kubernetes/service.yaml -n rbook
+
+cd /home/project/rbook/book
+kubectl create -f ./kubernetes/deployment.yml -n rbook
+kubectl create -f ./kubernetes/service.yaml -n rbook
+
+cd /home/project/rbook/billing
+kubectl create -f ./kubernetes/deployment.yml -n rbook
+kubectl create -f ./kubernetes/service.yaml -n rbook
+
+cd /home/project/rbook/mypage
+kubectl create -f ./kubernetes/deployment.yml -n rbook
+kubectl create -f ./kubernetes/service.yaml -n rbook
+```
+
+3)컨테이너라이징: Deploy 생성, Service 생성 확인
+```
+kubectl get all -n rbook
+```
+
+![image](https://user-images.githubusercontent.com/84724396/123275870-a8685d80-d53f-11eb-9aa4-422c9a276759.png)
 
 ### 1.6 ConfigMap
 
