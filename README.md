@@ -286,10 +286,10 @@ http GET http://localhost:8088/billings/2
 - [검증2] 책 재고가 0이면 대여를 하지 못 한다는 비기능 요구사항 확인
 
 ```
-1) 책 재고 확인 (bookid=2 재고 0)
+1) 책 재고 확인 (bookid=2 stock=0)
    http GET http://localhost:8088/books/2   
 
-2) 책 대여하기 --> Fail
+2) 책 대여하기 --> Fail (책은 재고가 없어 대여가 불가합니다. 메세지 출력) 
    http POST localhost:8088/rents userid=300 bookid=2
 ```
 
@@ -298,13 +298,13 @@ http GET http://localhost:8088/billings/2
 
 ### 5. 비동기식 호출 / 시간적 디커플링 / 장애격리 
 
-대여(rent)가 완료된 후에 과금(billing)으로 이를 알려주는 행위와 반납(return)이 완료된 후에 과금(billing)으로 이를 알려주는 행위는 비 동기식으로 처리해서 대여와 반납이 블로킹 되지 않아도 처리 한다.
+대여(rent)가 완료된 후에 billing으로 이를 알려주는 행위와 반납(return)이 완료된 후에 billing으로 이를 알려주는 행위는 비 동기식으로 처리해서 대여와 반납이 블로킹 되지 않아도 처리한다.
  
 - 대여가 완료되었다(returned)는 도메인 이벤트를 카프카로 송출한다(Publish)
 
 ![image](https://user-images.githubusercontent.com/84724396/122671181-68803e00-d200-11eb-9503-11f20445a3f0.png)
 
-- 과금(billing)에서는 대여 완료(rented) 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다.
+- billing에서는 대여 완료(rented) 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다.
 - 대여 완료된 (rented) 정보를 billing의 Repository에 저장한다.
 
 ![image](https://user-images.githubusercontent.com/84724396/122673339-e5181a00-d20a-11eb-9123-4f2dc14727d8.png)
@@ -314,11 +314,8 @@ billing 서비스는 rent, book 과 완전히 분리되어있으며(sync transac
 ```
 1) billing 서비스를 잠시 내려놓음 (ctrl+c)
 
-2) 책 대여(rent)
+2) 책 대여(rent) -> 성공
     http POST localhost:8088/rents userid=100 bookid=1
-
-3) myPage 확인 : rent 정보는 있으나 billing 서비스가 죽어 있어 billid, fee, billstatus 값이 없음
-   http GET localhost:8084/myPages    
 ```
 
 ![image](https://user-images.githubusercontent.com/84724396/123214227-e777be00-d501-11eb-96fa-7d66863588fb.png)
@@ -329,7 +326,6 @@ billing 서비스는 rent, book 과 완전히 분리되어있으며(sync transac
 ```
 
 ![image](https://user-images.githubusercontent.com/84724396/123214660-797fc680-d502-11eb-9c96-c0bfb49270e6.png)
-
 
 ```
 4) billing 서비스 기동
