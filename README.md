@@ -247,17 +247,17 @@ http GET http://localhost:8088/billings/2
 대여(rent) -> 책(book) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 
 호출 프로토콜은 이미 앞서 Rest Repository 에 의해 노출되어있는 REST 서비스를 FeignClient 를 이용하여 호출하도록 한다. 
 
-- 책 재고 확인 서비스를 호출하기 위하여 FeignClient를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
+5.1.책 재고 확인 서비스를 호출하기 위하여 FeignClient를 이용하여 Service 대행 인터페이스 (Proxy) 를 구현 
 
 ![image](https://user-images.githubusercontent.com/84724396/122668480-2dc3d900-d1f3-11eb-9f30-0b0dfaa44083.png)
 
-- 책 대여 요청을 받으면 책 재고 확인을 요청하도록 처리
+5.2.책 대여 요청을 받으면 책 재고 확인을 요청하도록 처리
 
 (rent) Rent.java (Entity)
 
 ![image](https://user-images.githubusercontent.com/84724396/122668694-3ff24700-d1f4-11eb-9130-fad3cf066dc1.png)
 
-- [검증1] 동기식 호출이 적용되서 Book 시스템이 장애가 나면 대여를 하지 못 한다는 것을 확인
+5.3.[검증1] 동기식 호출이 적용되서 Book 시스템이 장애가 나면 대여를 하지 못 한다는 것을 확인
 
 ```
 1) book 서비스를 잠시 내려놓음 (ctrl+c)
@@ -269,13 +269,13 @@ http GET http://localhost:8088/billings/2
 ![image](https://user-images.githubusercontent.com/84724396/123209772-1428d700-d4fc-11eb-9530-dd89f8ebb37a.png)
 
 ```
-1) book 서비스 재기동 -> 책 등록
+3) book 서비스 재기동 -> 책 등록
    cd book
    mvn spring-boot:run
    http POST http://localhost:8088/books bookid=1 stock=5
    http GET http://localhost:8088/books/1 
 
-2) 책 대여하기(rent) -->성공
+4) 책 대여하기(rent) -->성공
    http POST localhost:8088/rents userid=100 bookid=1   
 ```
 ![image](https://user-images.githubusercontent.com/84724396/123210339-d24c6080-d4fc-11eb-8fc5-fd611b9026e0.png)
@@ -283,7 +283,7 @@ http GET http://localhost:8088/billings/2
 ![image](https://user-images.githubusercontent.com/84724396/123210386-e1331300-d4fc-11eb-8f4e-ad41c3bd6e79.png)
 
 
-- [검증2] 책 재고가 0이면 대여를 하지 못 한다는 비기능 요구사항 확인
+5.4.[검증2] 책 재고가 0이면 대여를 하지 못 한다는 비기능 요구사항 확인
 
 ```
 1) 책 재고 확인 (bookid=2 stock=0)
@@ -296,7 +296,7 @@ http GET http://localhost:8088/billings/2
 ![image](https://user-images.githubusercontent.com/84724396/123211530-8b5f6a80-d4fe-11eb-9afb-4a30eef9ae3e.png)
 
 
-### 5. 비동기식 호출 / 시간적 디커플링 / 장애격리 
+### 6. 비동기식 호출 / 시간적 디커플링 / 장애격리 
 
 대여(rent)가 완료된 후에 billing으로 이를 알려주는 행위와 반납(return)이 완료된 후에 billing으로 이를 알려주는 행위는 비 동기식으로 처리해서 대여와 반납이 블로킹 되지 않아도 처리한다.
  
@@ -312,52 +312,56 @@ http GET http://localhost:8088/billings/2
 billing 서비스는 rent, book 과 완전히 분리되어있으며(sync transaction 없음), 이벤트 수신에 따라 처리되기 때문에, 청구(billing)이 유지보수로 인해 잠시 내려간 상태라도 대여를 하는데 문제가 없다.(시간적 디커플링, 장애 격리)
 
 ```
-1) billing 서비스를 잠시 내려놓음 (ctrl+c)
+6.1.billing 서비스를 잠시 내려놓음 (ctrl+c)
 
-2) 책 대여(rent) -> 성공
-    http POST localhost:8088/rents userid=100 bookid=1
+6.2.책 대여(rent) -> 성공
+http POST localhost:8088/rents userid=100 bookid=1
 ```
 
 ![image](https://user-images.githubusercontent.com/84724396/123214227-e777be00-d501-11eb-96fa-7d66863588fb.png)
 
 ```
-3) myPage 확인 : rent 정보는 있으나 billing 서비스가 죽어 있어 billid, fee, billstatus 값이 없음
-   http GET localhost:8084/myPages    
+6.3.myPage 확인 : rent 정보는 있으나 billing 서비스가 죽어 있어 billid, fee, billstatus 값이 없음
+http GET localhost:8084/myPages    
 ```
 
 ![image](https://user-images.githubusercontent.com/84724396/123214660-797fc680-d502-11eb-9c96-c0bfb49270e6.png)
 
 ```
-4) billing 서비스 기동
-   cd billing
-   mvn spring-boot:run
+6.4.billing 서비스 기동
+cd billing
+mvn spring-boot:run
 
-5) billing 확인 --> rentid=1 에 대한 billing 데이터가 생성됨
-   http GET http://localhost:8088/billings
+6.5.billing 확인 --> rentid=1 에 대한 billing 데이터가 생성됨
+
+http GET http://localhost:8088/billings
 ```
 ![image](https://user-images.githubusercontent.com/84724396/123215451-68838500-d503-11eb-8156-cf5d31f0d9b9.png)
 
 ```
-6) myPage 확인 : billid, fee, billstatus 값이 update 됨
-   http GET localhost:8084/myPages
+6.6.myPage 확인 : billid, fee, billstatus 값이 update 됨
+
+http GET localhost:8084/myPages
 ```
 ![image](https://user-images.githubusercontent.com/84724396/123215562-9072e880-d503-11eb-8eb7-4db6533ee567.png)
 
-### 6. CQRS 
+### 7. CQRS 
 
 mypage에서 rent와 billing 정보를 조회한다.
 ```
-1) 책 대여 후
+7.1.책 대여 후
 - rent 정보 : userid=500, bookid=1, rent status=대여
 - billing 정보 : billid=3, fee=1000, billing status=Billing
 ```
+
 ![image](https://user-images.githubusercontent.com/84724396/123216677-c4024280-d504-11eb-8f26-a6285a4f61b1.png)
 
 ```
-2) 책 반납 후
+7.2.책 반납 후
 - rent 정보 : userid=500, bookid=1, rent status=반납
 - billing 정보 : billid=3, fee=1000, billing status=Paid
 ```
+
 ![image](https://user-images.githubusercontent.com/84724396/123216758-d8ded600-d504-11eb-8d5e-fc43c3d8e0cd.png)
 
 
@@ -422,11 +426,11 @@ kubectl get all -n rbook
 
 ### 1.5 yml파일 이용한 deploy
 
-1.5.1)deployment.yml 파일 (예: book)
+1.5.1.deployment.yml 파일 (예: book)
 
 ![image](https://user-images.githubusercontent.com/84724396/123274061-262b6980-d53e-11eb-8279-539b01d49c4a.png)
 
-1.5.2)Deploy/Service 생성
+1.5.2.Deploy/Service 생성
 
 ```
 cd /home/project/rbook/rent
@@ -446,7 +450,7 @@ kubectl create -f ./kubernetes/deployment.yml -n rbook
 kubectl create -f ./kubernetes/service.yaml -n rbook
 ```
 
-1.5.3)컨테이너라이징: Deploy 생성, Service 생성 확인
+1.5.3.컨테이너라이징: Deploy 생성, Service 생성 확인
 
 ```
 kubectl get all -n rbook
@@ -457,7 +461,7 @@ kubectl get all -n rbook
 
 ### 1.6 ConfigMap
 
-1.6.1)application.yml 파일 설정
+1.6.1.application.yml 파일 설정
 - default 쪽
 
 ![image](https://user-images.githubusercontent.com/84724396/123258618-887c6e00-d52e-11eb-9ac4-7edab97c6ee3.png)
@@ -466,23 +470,23 @@ kubectl get all -n rbook
 
 ![image](https://user-images.githubusercontent.com/84724396/123255732-24a47600-d52b-11eb-9dc6-3b70fe16879b.png)
 
-1.6.2)BookService.java 파일
+1.6.2.BookService.java 파일
 
 ![image](https://user-images.githubusercontent.com/84724396/123256098-87960d00-d52b-11eb-8b5c-5fe397e8d325.png)
 
 
-1.6.3)deployment.yaml 파일 설정
+1.6.3.deployment.yaml 파일 설정
 
 ![image](https://user-images.githubusercontent.com/84724396/123269893-5f61da80-d53a-11eb-9daa-031203e4dacd.png)
 
-1.6.4)configMap 생성 및 확인
+1.6.4.configMap 생성 및 확인
 ```
 kubectl create configmap configmap-bookurl --from-literal=url=http://book:8080 --from-literal=fluentd-server-ip=10.xxx.xxx.xxx -n rbook
 kubectl get configmap configmap-bookurl -o yaml -n rbook
 ```
 ![image](https://user-images.githubusercontent.com/84724396/123277167-d306e600-d540-11eb-860b-b4894afdcdf9.png)
 
-1.6.5)설정한 url로 주문 호출 --> 성공
+1.6.5.설정한 url로 주문 호출 --> 성공
 
 ```
 http POST http://20.194.57.130:8080/rents userid=101 bookid=1
@@ -491,7 +495,7 @@ http POST http://20.194.57.130:8080/rents userid=101 bookid=1
 ![image](https://user-images.githubusercontent.com/84724396/123270466-e4e58a80-d53a-11eb-8e48-694dd61f35c4.png)
 
 
-1.6.6)configmap 삭제 후 app 서비스 재시작 -->Fail
+1.6.6.configmap 삭제 후 app 서비스 재시작 -->Fail
 
 ```
 kubectl delete configmap --all -n rbook
