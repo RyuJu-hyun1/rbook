@@ -241,7 +241,7 @@ http GET http://localhost:8088/billings/2
 ![image](https://user-images.githubusercontent.com/84724396/123203430-4f71d880-d4f1-11eb-80d4-d163915b8a4c.png)
 
 
-### 4. 동기식 호출 과 Fallback 처리
+### 5. 동기식 호출 과 Fallback 처리
 
 비기능적 요구사항 중 하나인 '책 재고가 1개 이상일때만 대여할 수 있어야 한다.' 를 충족하기 위해
 대여(rent) -> 책(book) 간의 호출은 동기식 일관성을 유지하는 트랜잭션으로 처리하기로 하였다. 
@@ -269,9 +269,11 @@ http GET http://localhost:8088/billings/2
 ![image](https://user-images.githubusercontent.com/84724396/123209772-1428d700-d4fc-11eb-9530-dd89f8ebb37a.png)
 
 ```
-#book 서비스 재기동
-cd book
-mvn spring-boot:run
+1) book 서비스 재기동 -> 책 등록
+   cd book
+   mvn spring-boot:run
+   http POST http://localhost:8088/books bookid=1 stock=5
+   http GET http://localhost:8088/books/1 
 
 2) 책 대여하기(rent) -->성공
    http POST localhost:8088/rents userid=100 bookid=1   
@@ -284,63 +286,83 @@ mvn spring-boot:run
 - [검증2] 책 재고가 0이면 대여를 하지 못 한다는 비기능 요구사항 확인
 
 ```
-#책 재고 확인
-http GET localhost:8082/books/2   #bookid=2 의 재고 0
+1) 책 재고 확인 (bookid=2 재고 0)
+   http GET http://localhost:8088/books/1   
 
-#대여하기(rent)
-http POST localhost:8081/rents userid=200 bookid=2   #Fail
+2) 책 대여하기 --> Fail
+   http POST localhost:8088/rents userid=300 bookid=2
 ```
--------이미지 
+
+![image](https://user-images.githubusercontent.com/84724396/123211530-8b5f6a80-d4fe-11eb-9afb-4a30eef9ae3e.png)
+
 
 ### 5. 비동기식 호출 / 시간적 디커플링 / 장애격리 
 
-대여(rent)가 완료된 후에 청구(billing)으로 이를 알려주는 행위와 반납(return)이 완료된 후에 청구(billing)으로 이를 알려주는 행위는 비 동기식으로 처리해서 대여와 반납이 블로킹 되지 않아도 처리 한다.
+대여(rent)가 완료된 후에 과금(billing)으로 이를 알려주는 행위와 반납(return)이 완료된 후에 과금(billing)으로 이를 알려주는 행위는 비 동기식으로 처리해서 대여와 반납이 블로킹 되지 않아도 처리 한다.
  
 - 대여가 완료되었다(returned)는 도메인 이벤트를 카프카로 송출한다(Publish)
 
 ![image](https://user-images.githubusercontent.com/84724396/122671181-68803e00-d200-11eb-9503-11f20445a3f0.png)
 
-- 청구(billing)에서는 대여 완료(rented) 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다.
+- 과금(billing)에서는 대여 완료(rented) 이벤트에 대해서 이를 수신하여 자신의 정책을 처리하도록 PolicyHandler 를 구현한다.
 - 대여 완료된 (rented) 정보를 billing의 Repository에 저장한다.
 
 ![image](https://user-images.githubusercontent.com/84724396/122673339-e5181a00-d20a-11eb-9123-4f2dc14727d8.png)
 
-청구(billing)시스템은 대여(rent)/책(book)와 완전히 분리되어있으며(sync transaction 없음), 이벤트 수신에 따라 처리되기 때문에, 청구(billing)이 유지보수로 인해 잠시 내려간 상태라도 대여를 하는데 문제가 없다.(시간적 디커플링, 장애 격리)
+billing 서비스는 rent, book 과 완전히 분리되어있으며(sync transaction 없음), 이벤트 수신에 따라 처리되기 때문에, 청구(billing)이 유지보수로 인해 잠시 내려간 상태라도 대여를 하는데 문제가 없다.(시간적 디커플링, 장애 격리)
 
 ```
-#청구(billing) 서비스를 잠시 내려놓음 (ctrl+c)
+1) billing 서비스를 잠시 내려놓음 (ctrl+c)
 
-#대여(rent)
-http POST localhost:8081/rents userid=300 bookid=1
+2) 책 대여(rent)
+    http POST localhost:8088/rents userid=100 bookid=1
 
-#대여 상태 확인 (myPage)
-http GET localhost:8084/myPages    # billid, fee, billstatus 값이 없음
-```
--------- 이미지 교체
-
-![image](https://user-images.githubusercontent.com/73699193/98078301-2b577d80-1eb5-11eb-9d89-7c03a3fa27dd.png)
-```
-#청구(billing) 서비스 기동
-cd billing
-mvn spring-boot:run
-
-#대여 상태 확인 (myPage)
-http GET localhost:8084/myPages    # billid, fee, billstatus 값이 update 됨
+3) myPage 확인 : rent 정보는 있으나 billing 서비스가 죽어 있어 billid, fee, billstatus 값이 없음
+   http GET localhost:8084/myPages    
 ```
 
--------- 이미지 교체
+![image](https://user-images.githubusercontent.com/84724396/123214227-e777be00-d501-11eb-96fa-7d66863588fb.png)
 
-![image](https://user-images.githubusercontent.com/73699193/98078837-2cd57580-1eb6-11eb-8850-a8c621410d61.png)
+```
+3) myPage 확인 : rent 정보는 있으나 billing 서비스가 죽어 있어 billid, fee, billstatus 값이 없음
+   http GET localhost:8084/myPages    
+```
+
+![image](https://user-images.githubusercontent.com/84724396/123214660-797fc680-d502-11eb-9c96-c0bfb49270e6.png)
+
+
+```
+4) billing 서비스 기동
+   cd billing
+   mvn spring-boot:run
+
+5) billing 확인 --> rentid=1 에 대한 billing 데이터가 생성됨
+   http GET http://localhost:8088/billings
+```
+![image](https://user-images.githubusercontent.com/84724396/123215451-68838500-d503-11eb-8156-cf5d31f0d9b9.png)
+
+```
+6) myPage 확인 : billid, fee, billstatus 값이 update 됨
+   http GET localhost:8084/myPages
+```
+![image](https://user-images.githubusercontent.com/84724396/123215562-9072e880-d503-11eb-8eb7-4db6533ee567.png)
 
 ### 6. CQRS 
 
 mypage에서 rent와 billing 정보를 조회한다.
 ```
-- rent 정보 : userid=100, bookid=1, status=반납
-- billing 정보 : billind=2, fee=1000, status=Paid
+1) 책 대여 후
+- rent 정보 : userid=500, bookid=1, rent status=대여
+- billing 정보 : billid=3, fee=1000, billing status=Billing
 ```
+![image](https://user-images.githubusercontent.com/84724396/123216677-c4024280-d504-11eb-8f26-a6285a4f61b1.png)
 
-![image](https://user-images.githubusercontent.com/84724396/123204314-cc518200-d4f2-11eb-9723-a6e83d3e4845.png)
+```
+2) 책 반납 후
+- rent 정보 : userid=500, bookid=1, rent status=반납
+- billing 정보 : billid=3, fee=1000, billing status=Paid
+```
+![image](https://user-images.githubusercontent.com/84724396/123216758-d8ded600-d504-11eb-8d5e-fc43c3d8e0cd.png)
 
 
 # 운영
