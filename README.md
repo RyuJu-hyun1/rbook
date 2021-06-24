@@ -639,30 +639,39 @@ kubectl set image deploy store store=admin02.azurecr.io/store:v4 -n phone82
 
 ### 6. Self-healing (Liveness Probe)
 
-- store 서비스 정상 확인
+6.1.billing 서비스 정상 확인
 
-![image](https://user-images.githubusercontent.com/27958588/98096336-fb1cd880-1ece-11eb-9b99-3d704cd55fd2.jpg)
+![image](https://user-images.githubusercontent.com/84724396/123284221-0cdaeb00-d547-11eb-889f-8551999656a4.png)
 
+6.2.deployment.yml 에 Liveness Probe 옵션 추가
 
-- deployment.yml 에 Liveness Probe 옵션 추가
 ```
-cd ~/phone82/store/kubernetes
+cd ~/rbook/billing/kubernetes
 vi deployment.yml
 
 (아래 설정 변경)
-livenessProbe:
-	tcpSocket:
-	  port: 8081
-	initialDelaySeconds: 5
-	periodSeconds: 5
+ livenessProbe:
+            httpGet:
+              path: '/actuator/health'
+              port: 8087
+            initialDelaySeconds: 3
+            periodSeconds: 5
 ```
-![image](https://user-images.githubusercontent.com/27958588/98096375-0839c780-1ecf-11eb-85fb-00e8252aa84a.jpg)
+![image](https://user-images.githubusercontent.com/84724396/123288765-d30be380-d54a-11eb-8b7e-e3875e6250e9.png)
 
-- store pod에 liveness가 적용된 부분 확인
 
-![image](https://user-images.githubusercontent.com/27958588/98096393-0a9c2180-1ecf-11eb-8ac5-f6048160961d.jpg)
+6.3.billing pod에 liveness가 적용된 부분 확인
 
-- store 서비스의 liveness가 발동되어 13번 retry 시도 한 부분 확인
+```
+kubectl apply -f kubernetes/deployment.yml -n rbook
+kubectl describe deploy billing -n rbook 
+```
 
-![image](https://user-images.githubusercontent.com/27958588/98096461-20a9e200-1ecf-11eb-8b02-364162baa355.jpg)
+![image](https://user-images.githubusercontent.com/84724396/123287323-9f7c8980-d549-11eb-8d16-39fc54daea14.png)
+
+6.4.billin 서비스의 liveness가 발동되어 5번 retry 시도 한 부분 확인
+
+![image](https://user-images.githubusercontent.com/84724396/123286296-c25a6e00-d548-11eb-98f9-6e4a6438b70f.png)
+
+
 
