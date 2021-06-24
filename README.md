@@ -643,7 +643,7 @@ kubectl set image deploy store store=admin02.azurecr.io/store:v4 -n phone82
 
 ![image](https://user-images.githubusercontent.com/84724396/123284221-0cdaeb00-d547-11eb-889f-8551999656a4.png)
 
-6.2.deployment.yml 에 Liveness Probe 옵션 추가
+6.2.billing의 deployment.yml 에 Liveness Probe 옵션 추가
 
 ```
 cd ~/rbook/billing/kubernetes
@@ -660,7 +660,7 @@ vi deployment.yml
 ![image](https://user-images.githubusercontent.com/84724396/123288765-d30be380-d54a-11eb-8b7e-e3875e6250e9.png)
 
 
-6.3.billing pod에 liveness가 적용된 부분 확인
+6.3.deployment.yml 적용 후 billing pod에 liveness가 적용된 부분 확인
 
 ```
 kubectl apply -f kubernetes/deployment.yml -n rbook
