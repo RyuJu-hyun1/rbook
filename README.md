@@ -191,7 +191,7 @@ rent, book, billing, myPage 서비스는 Correlation-key 로 rentid, bookid, bil
 서비스간 연관된 처리를 정확하게 구현하고 있습니다.
 ```
 
-4.1 책 등록 (bookid=1, 재고: 5개)
+4.1 책 등록 (bookid=1, stock: 5개)
 ```
 http POST http://localhost:8088/books bookid=1 stock=5
 http POST http://localhost:8088/books bookid=2 stock=1
@@ -202,10 +202,9 @@ http POST http://localhost:8088/books bookid=2 stock=1
 ```
 http POST localhost:8088/rents userid=100 bookid=1
 ```
+![image](https://user-images.githubusercontent.com/84724396/123205900-a5487f80-d4f5-11eb-8999-79b4a5234c46.png)
 
-[image](https://user-images.githubusercontent.com/84724396/123202688-066d5480-d4f0-11eb-8f9c-cbc18f9f7f83.png)
-
-4.3 책 재고가 1개 감소한다. (bookid=1, 재고: 4개)
+4.3 책 재고(stock)가 1개 감소한다. (bookid=1, stock: 4개)
 ```
 http GET http://localhost:8088/books/1 
 ```
@@ -225,7 +224,7 @@ http PATCH localhost:8088/rents/2 status="반납"
 
 ![image](https://user-images.githubusercontent.com/84724396/123203176-e5593380-d4f0-11eb-9e43-e7327fc3a36f.png)
 
-4.6 반납한 책 (bookid=1) 재고가 1개 증가한다. (4개->5개)
+4.6 반납한 책 (bookid=1) 재고(stock)가 1개 증가한다. (5개)
 ```
 http GET http://localhost:8088/books/1
 ```
