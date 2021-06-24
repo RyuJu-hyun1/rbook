@@ -369,19 +369,11 @@ mypage에서 rent와 billing 정보를 조회한다.
 ```
 kubectl create ns rbook
 ```
---------이미지 교체
-
-![image](https://user-images.githubusercontent.com/73699193/97960790-6d20ef00-1df5-11eb-998d-d5591975b5d4.png)
 
 ### 1.2 git에서 소스 가져오기
 ```
 git clone https://github.com/rbook/app.git
 ```
-
---------이미지 교체
-
-![image](https://user-images.githubusercontent.com/73699193/98089346-eb4cc680-1ec5-11eb-9c23-f6987dee9308.png)
-
 
 ### 1.3 Build 하기 (예: rent)
 ```
@@ -390,30 +382,39 @@ mvn clean
 mvn compile
 mvn package
 ```
-
---------이미지 교체
-
-![image](https://user-images.githubusercontent.com/73699193/98089442-19320b00-1ec6-11eb-88b5-544cd123d62a.png)
-
-
-### 1.4 Docker Image Push/deploy/서비스 생성 (예: rent)-- 명령어 수정
+### 1.4 Docker Image Push/deploy/서비스 생성 (예: rent)
 ```
 cd /home/project/rbook/rent
-az acr build --registry skcc1team --image skcc1team.azurecr.io/bike:latest . 
-kubectl create deploy rent --image=skcc1team.azurecr.io/bike:latest -n rbook  
+az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/rent:v1 . 
+kubectl create deploy rent --image=skccrjh2.azurecr.io/rent:v1 -n rbook  
 kubectl expose deploy rent --type=ClusterIP --port=8080 -n rbook
+
+cd /home/project/rbook/book
+az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/book:v1 . 
+kubectl create deploy book --image=skccrjh2.azurecr.io/book:v1 -n rbook  
+kubectl expose deploy book --type=ClusterIP --port=8080 -n rbook
+
+cd /home/project/rbook/billing
+az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/billing:v1 . 
+kubectl create deploy billing --image=skccrjh2.azurecr.io/billing:v1 -n rbook  
+kubectl expose deploy billing --type=ClusterIP --port=8080 -n rbook
+
+cd /home/project/rbook/mypage
+az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/mypage:v1 . 
+kubectl create deploy mypage --image=skccrjh2.azurecr.io/mypage:v1 -n rbook  
+kubectl expose deploy mypage --type=ClusterIP --port=8080 -n rbook
+
+cd /home/project/rbook/gateway
+az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/gateway:v2 . 
+kubectl create deploy gateway --image=skccrjh2.azurecr.io/gateway:v2 -n rbook  
+kubectl expose deploy gateway --type=LoadBalancer --port=8080 -n rbook
 ```
-
---------이미지 교체
-
-![image](https://user-images.githubusercontent.com/73699193/98089685-6dd58600-1ec6-11eb-8fb9-80705c854c7b.png)
 
 ### 1.5 yml파일 이용한 deploy
 ```
 cd /home/project/rbook/rent
 kubectl apply -f ./kubernetes/deployment.yml -n rbook
 ```
-
 - deployment.yml 파일
 ```
 namespace, image 설정
@@ -430,13 +431,7 @@ resource 설정 (autoscaling)
 ```
 kubectl get all -n rbook
 ```
-
---------이미지 교체
-
-![image](https://user-images.githubusercontent.com/73699193/98090560-83977b00-1ec7-11eb-9770-9cfe1021f0b4.png)
-
-
-- book, billing, mypage, gateway에도 동일한 작업 반복
+![image](https://user-images.githubusercontent.com/84724396/123223345-ca47ed00-d50b-11eb-9948-c6720054f7c3.png)
 
 
 ### 2. 동기식 호출 / 서킷 브레이킹 / 장애격리
