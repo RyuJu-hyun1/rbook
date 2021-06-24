@@ -187,7 +187,8 @@ gateway > applitcation.yml 설정
 
 Correlation
 ```
-rent, book, billing, myPage 서비스는 Correlation-key 로 구userid, rentid, bookid, billid 값을 전달받아 서비스간 연관된 처리를 정확하게 구현하고 있습니다.
+rent, book, billing, myPage 서비스는 Correlation-key 로 rentid, bookid, billid 값을 전달받아 
+서비스간 연관된 처리를 정확하게 구현하고 있습니다.
 ```
 
 4.1 책 등록 (bookid=1, 재고: 5개)
