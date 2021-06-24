@@ -177,7 +177,9 @@ book, billing의 pom.xml 설정
 ### 3. Gateway 적용
 
 API Gateway를 통하여 마이크로 서비스들의 진입점을 통일할 수 있다. 다음과 같이 Gateway를 적용하였다.
+```
 gateway > applitcation.yml 설정
+```
 
 ![image](https://user-images.githubusercontent.com/84724396/122665922-36151780-d1e5-11eb-9779-e9d0870a6f95.png)
 ![image](https://user-images.githubusercontent.com/84724396/122665929-40cfac80-d1e5-11eb-83d9-bbe402f73f57.png)
