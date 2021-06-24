@@ -287,7 +287,7 @@ http GET http://localhost:8088/billings/2
 
 ```
 1) 책 재고 확인 (bookid=2 재고 0)
-   http GET http://localhost:8088/books/1   
+   http GET http://localhost:8088/books/2   
 
 2) 책 대여하기 --> Fail
    http POST localhost:8088/rents userid=300 bookid=2
