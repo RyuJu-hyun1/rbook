@@ -415,18 +415,60 @@ kubectl expose deploy gateway --type=LoadBalancer --port=8080 -n rbook
 cd /home/project/rbook/rent
 kubectl apply -f ./kubernetes/deployment.yml -n rbook
 ```
-- deployment.yml 파일
+- deployment.yml 파일 (예: rent)
 ```
-![image](https://user-images.githubusercontent.com/84724396/123252836-ac888100-d527-11eb-9519-1c6e981711c6.png)
-
+![image](https://user-images.githubusercontent.com/84724396/123253978-0b022f00-d529-11eb-9223-01ba51711a3f.png)
 
 ### 1.6 컨테이너라이징: Deploy 생성, 서비스 생성 확인
 
 ```
 kubectl get all -n rbook
 ```
-![image](https://user-images.githubusercontent.com/84724396/123223345-ca47ed00-d50b-11eb-9948-c6720054f7c3.png)
+![image](https://user-images.githubusercontent.com/84724396/123253692-b3fc5a00-d528-11eb-9066-f2e95076ef7a.png)
 
+### 1.6 ConfigMap
+
+1)application.yml 파일 설정
+- default 쪽
+
+![image](https://user-images.githubusercontent.com/84724396/123258618-887c6e00-d52e-11eb-9ac4-7edab97c6ee3.png)
+
+- dovker 쪽
+
+![image](https://user-images.githubusercontent.com/84724396/123255732-24a47600-d52b-11eb-9dc6-3b70fe16879b.png)
+
+2) BookService.java 파일
+
+![image](https://user-images.githubusercontent.com/84724396/123256098-87960d00-d52b-11eb-8b5c-5fe397e8d325.png)
+
+
+3) deployment.yaml 파일 설정
+
+![image](https://user-images.githubusercontent.com/84724396/123269893-5f61da80-d53a-11eb-9daa-031203e4dacd.png)
+
+4) configMap 생성 및 확인
+```
+kubectl create configmap configmap-bookurl --from-literal=url=http://book:8080 --from-literal=fluentd-server-ip=10.xxx.xxx.xxx -n rbook
+kubectl get configmap configmap-bookurl -o yaml -n rbook
+```
+![image](https://user-images.githubusercontent.com/84724396/123270218-acde4780-d53a-11eb-9f2a-4731f3b703b9.png)
+
+5) 설정한 url로 주문 호출 --> 성공
+```
+http POST http://20.194.57.130:8080/rents userid=101 bookid=1
+```
+![image](https://user-images.githubusercontent.com/84724396/123270466-e4e58a80-d53a-11eb-8e48-694dd61f35c4.png)
+
+6) configmap 삭제 후 app 서비스 재시작
+```
+kubectl delete configmap --all -n rbook
+```
+![image](https://user-images.githubusercontent.com/84724396/123270712-1fe7be00-d53b-11eb-851b-55f753801160.png)
+
+```
+kubectl get pod/rent-85c54dd5b-gzjrb -n rbook -o yaml | kubectl replace --force -f-
+```
+![image](https://user-images.githubusercontent.com/84724396/123271000-5ae9f180-d53b-11eb-9836-fb974423fa6a.png)
 
 ### 2. 동기식 호출 / 서킷 브레이킹 / 장애격리
 
@@ -551,55 +593,6 @@ kubectl set image deploy store store=admin02.azurecr.io/store:v4 -n phone82
 - Availability: 100.00 % 확인
 
 ![image](https://user-images.githubusercontent.com/73699193/98106524-c152ce80-1edc-11eb-8e0f-3731ca2f709d.png)
-
-
-
-## Config Map
-
-- apllication.yml 설정
-
-* default쪽
-
-![image](https://user-images.githubusercontent.com/73699193/98108335-1c85c080-1edf-11eb-9d0f-1f69e592bb1d.png)
-
-* docker 쪽
-
-![image](https://user-images.githubusercontent.com/73699193/98108645-ad5c9c00-1edf-11eb-8d54-487d2262e8af.png)
-
-- Deployment.yml 설정
-
-![image](https://user-images.githubusercontent.com/73699193/98108902-12b08d00-1ee0-11eb-8f8a-3a3ea82a635c.png)
-
-- config map 생성 후 조회
-```
-kubectl create configmap apiurl --from-literal=url=http://pay:8080 --from-literal=fluentd-server-ip=10.xxx.xxx.xxx -n phone82
-```
-![image](https://user-images.githubusercontent.com/73699193/98107784-5bffdd00-1ede-11eb-8da6-82dbead0d64f.png)
-
-- 설정한 url로 주문 호출
-```
-http POST http://app:8080/orders item=dfdf1 qty=21
-```
-
-![image](https://user-images.githubusercontent.com/73699193/98109319-b732cf00-1ee0-11eb-9e92-ad0e26e398ec.png)
-
-- configmap 삭제 후 app 서비스 재시작
-```
-kubectl delete configmap apiurl -n phone82
-kubectl get pod/app-56f677d458-5gqf2 -n phone82 -o yaml | kubectl replace --force -f-
-```
-![image](https://user-images.githubusercontent.com/73699193/98110005-cf571e00-1ee1-11eb-973f-2f4922f8833c.png)
-
-- configmap 삭제된 상태에서 주문 호출   
-```
-http POST http://app:8080/orders item=dfdf2 qty=22
-```
-![image](https://user-images.githubusercontent.com/73699193/98110323-42f92b00-1ee2-11eb-90f3-fe8044085e9d.png)
-
-![image](https://user-images.githubusercontent.com/73699193/98110445-720f9c80-1ee2-11eb-851e-adcd1f2f7851.png)
-
-![image](https://user-images.githubusercontent.com/73699193/98110782-f4985c00-1ee2-11eb-97a7-1fed3c6b042c.png)
-
 
 
 ## Self-healing (Liveness Probe)
