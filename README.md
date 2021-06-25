@@ -480,10 +480,7 @@ kubectl get all -n rbook
 ![image](https://user-images.githubusercontent.com/84724396/123269893-5f61da80-d53a-11eb-9daa-031203e4dacd.png)
 
 2.4.configMap 생성 및 확인
-```
-kubectl create configmap configmap-bookurl --from-literal=url=http://book:8080 --from-literal=fluentd-server-ip=10.xxx.xxx.xxx -n rbook
-kubectl get configmap configmap-bookurl -o yaml -n rbook
-```
+
 ![image](https://user-images.githubusercontent.com/84724396/123277167-d306e600-d540-11eb-860b-b4894afdcdf9.png)
 
 2.5.설정한 url로 주문 호출 --> 성공
