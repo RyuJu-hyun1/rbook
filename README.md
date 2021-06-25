@@ -567,36 +567,37 @@ siege -c100 -t20S -r10 -v --content-type "application/json" 'http://20.194.57.13
 
 ### 4. 오토스케일 아웃
 
-- 대리점 시스템에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다:
+4.1.book 서비스에 대한 replica 를 동적으로 늘려주도록 HPA 를 설정한다. 설정은 CPU 사용량이 15프로를 넘어서면 replica 를 10개까지 늘려준다.
 
 ```
-# autocale out 설정
-store > deployment.yml 설정
+book > deployment.yml 설정
 ```
 ![image](https://user-images.githubusercontent.com/73699193/98187434-44fbd200-1f54-11eb-9859-daf26f812788.png)
 
 ```
-kubectl autoscale deploy store --min=1 --max=10 --cpu-percent=15 -n phone82
+kubectl autoscale deploy book --min=1 --max=10 --cpu-percent=15 -n rbook
 ```
-![image](https://user-images.githubusercontent.com/73699193/98100149-ce1ef480-1ed3-11eb-908e-a75b669d611d.png)
+![image](https://user-images.githubusercontent.com/84724396/123357124-fd3dbf80-d5a3-11eb-8880-5d3c246b13df.png)
 
 
--
-- CB 에서 했던 방식대로 워크로드를 2분 동안 걸어준다.
-```
-kubectl exec -it pod/siege-5c7c46b788-4rn4r -c siege -n phone82 -- /bin/bash
-siege -c100 -t120S -r10 -v --content-type "application/json" 'http://store:8080/storeManages POST {"orderId":"456", "process":"Payed"}'
-```
-![image](https://user-images.githubusercontent.com/73699193/98102543-0d9b1000-1ed7-11eb-9cb6-91d7996fc1fd.png)
+4.2.CB 에서 했던 방식대로 부하를 걸어 준다 : 동시사용자 200명, 120초 동안 실시
 
-- 오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
 ```
-kubectl get deploy store -w -n phone82
+kubectl exec -it pod/siege-d484db9c-ln4r4 -c siege -n rbook -- /bin/bash
+siege -c200 -t120S -r10 -v --content-type "application/json" 'http://20.194.57.130:8080/rents POST {"userid": "201", "bookid": "7" }'
+```
+![image](https://user-images.githubusercontent.com/84724396/123365263-e8b3f400-d5b0-11eb-9445-75ee5ea96259.png)
+
+4.3.오토스케일이 어떻게 되고 있는지 모니터링을 걸어둔다:
+
+```
+kubectl get deploy book -w -n rbook
 ```
 - 어느정도 시간이 흐른 후 스케일 아웃이 벌어지는 것을 확인할 수 있다. max=10 
 - 부하를 줄이니 늘어난 스케일이 점점 줄어들었다.
 
-![image](https://user-images.githubusercontent.com/73699193/98102926-92862980-1ed7-11eb-8f19-a673d72da580.png)
+![image](https://user-images.githubusercontent.com/84724396/123364797-0c2a6f00-d5b0-11eb-8d4a-7cf9c3ec0a5f.png)
+
 
 - 다시 부하를 주고 확인하니 Availability가 높아진 것을 확인 할 수 있었다.
 
