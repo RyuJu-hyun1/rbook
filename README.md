@@ -599,11 +599,6 @@ kubectl get deploy book -w -n rbook
 ![image](https://user-images.githubusercontent.com/84724396/123364797-0c2a6f00-d5b0-11eb-8d4a-7cf9c3ec0a5f.png)
 
 
-- 다시 부하를 주고 확인하니 Availability가 높아진 것을 확인 할 수 있었다.
-
-![image](https://user-images.githubusercontent.com/73699193/98103249-14765280-1ed8-11eb-8c7c-9ea1c67e03cf.png)
-
-
 ### 5. 무정지 재배포
 
 * 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscale 이나 CB 설정을 제거함
