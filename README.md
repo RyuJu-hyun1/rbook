@@ -552,21 +552,17 @@ hystrix:
  Ctrl + C -> exit
 ```
 
-3.4.부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인: 동시사용자 5명, 10초 동안 실시
+3.4.부하테스터 siege 툴을 통한 서킷 브레이커 동작 확인: 동시사용자 100명, 12초 동안 실시
 
 ```
-siege -c5 -t10S -r10 -v --content-type "application/json" 'http://20.194.57.130:8080/rents POST {"userid": "201", "bikeid": "7" }'
+siege -c100 -t20S -r10 -v --content-type "application/json" 'http://20.194.57.130:8080/rents POST {"userid": "201", "bookid": "7" }'
 
 ```
 3.5부하 발생하여 CB가 발동하여 요청 실패처리하였고, 밀린 부하가 book 에서 처리되면서 다시 rent 를 받기 시작 
 
+![image](https://user-images.githubusercontent.com/84724396/123355628-04170300-d5a1-11eb-8f9d-45de4a446673.png)
 
-
-- report
-
-![image](https://user-images.githubusercontent.com/73699193/98099047-6e741980-1ed2-11eb-9c55-6fe603e52f8b.png)
-
-- CB 잘 적용됨을 확인
+![image](https://user-images.githubusercontent.com/84724396/123355681-23159500-d5a1-11eb-8fe4-7ea3fabbac46.png)
 
 
 ### 4. 오토스케일 아웃
