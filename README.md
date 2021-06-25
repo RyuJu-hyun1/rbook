@@ -599,42 +599,54 @@ kubectl get deploy book -w -n rbook
 ![image](https://user-images.githubusercontent.com/84724396/123364797-0c2a6f00-d5b0-11eb-8d4a-7cf9c3ec0a5f.png)
 
 
-### 5. 무정지 재배포
+### 5. Zero-downtime deploy (readiness probe)
 
-* 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscale 이나 CB 설정을 제거함
+5.1. deployment_readyness.yml에 readiness 옵션을 제거하고 배포
 
-
-- seige 로 배포작업 직전에 워크로드를 모니터링 함.
 ```
-kubectl apply -f kubernetes/deployment_readiness.yml
+kubectl create -f ./kubernetes/deployment_readyness.yml -n rbook
+kubectl create -f ./kubernetes/service.yaml -n rbook
 ```
-- readiness 옵션이 없는 경우 배포 중 서비스 요청처리 실패
 
-![image](https://user-images.githubusercontent.com/73699193/98105334-2a394700-1edb-11eb-9633-f5c33c5dee9f.png)
+![image](https://user-images.githubusercontent.com/84724396/123377084-7e0db300-d5c6-11eb-81e9-f4a8262c836b.png)
+
+5.2.새로운 버전의 이미지로 교체
+
+```
+az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/billing:v8 .
+kubectl set image deploy billing billing=skccrjh2.azurecr.io/billing:v8 -n rbook
+```
+
+5.3.배포 중 서비스 요청처리 실패
+
+![image](https://user-images.githubusercontent.com/84724396/123377034-6cc4a680-d5c6-11eb-81e3-17a659d3ddeb.png)
 
 
-- deployment.yml에 readiness 옵션을 추가 
-
-![image](https://user-images.githubusercontent.com/73699193/98107176-75ecf000-1edd-11eb-88df-617c870b49fb.png)
+5.4 deployment.yml에 readiness 옵션을 적용해서 배포
 
 - readiness적용된 deployment.yml 적용
 
-```
-kubectl apply -f kubernetes/deployment.yml
-```
-- 새로운 버전의 이미지로 교체
-```
-cd acr
-az acr build --registry admin02 --image admin02.azurecr.io/store:v4 .
-kubectl set image deploy store store=admin02.azurecr.io/store:v4 -n phone82
-```
-- 기존 버전과 새 버전의 store pod 공존 중
+![image](https://user-images.githubusercontent.com/84724396/123374613-56b4e700-d5c2-11eb-908d-f4f1194de3c8.png)
 
-![image](https://user-images.githubusercontent.com/73699193/98106161-65884580-1edc-11eb-9540-17a3c9bdebf3.png)
+```
+kubectl create -f ./kubernetes/deployment.yml -n rbook
+kubectl create -f ./kubernetes/service.yaml -n rbook
+```
+
+5.5.새로운 버전의 이미지로 교체
+
+```
+az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/billing:v9 .
+kubectl set image deploy billing billing=skccrjh2.azurecr.io/billing:v9 -n rbook
+```
+
+5.3.기존 버전과 새 버전의 store pod 공존 중
+
+![image](https://user-images.githubusercontent.com/84724396/123375164-46e9d280-d5c3-11eb-8d65-72d605b24661.png)
 
 - Availability: 100.00 % 확인
 
-![image](https://user-images.githubusercontent.com/73699193/98106524-c152ce80-1edc-11eb-8e0f-3731ca2f709d.png)
+![image](https://user-images.githubusercontent.com/84724396/123375245-684abe80-d5c3-11eb-8b00-1a48209777f0.png)
 
 
 ### 6. Self-healing (Liveness Probe)
