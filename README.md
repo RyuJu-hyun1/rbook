@@ -637,7 +637,7 @@ az acr build --registry skccrjh2 --image skccrjh2.azurecr.io/billing:v9 .
 kubectl set image deploy billing billing=skccrjh2.azurecr.io/billing:v9 -n rbook
 ```
 
-5.3.기존 버전과 새 버전의 store pod 공존 중
+5.3.기존 버전과 새 버전의 billing pod 공존 중
 
 ![image](https://user-images.githubusercontent.com/84724396/123375164-46e9d280-d5c3-11eb-8d65-72d605b24661.png)
 
